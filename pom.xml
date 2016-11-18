@@ -20,16 +20,11 @@
         </plugins>
     </build>
 
-    <properties>
-        <netty.vison>4.1.6.Final</netty.vison>
-    </properties>
-
-
         <dependencies>
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty-microbench</artifactId>
-                <version>4.1.6.Final</version>
+                <artifactId>netty-all</artifactId>
+                <version>5.0.0.Alpha2</version>
             </dependency>
         </dependencies>
 
