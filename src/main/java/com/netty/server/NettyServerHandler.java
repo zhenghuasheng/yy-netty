@@ -11,6 +11,8 @@ import com.netty.message.ReplyServerBody;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 
 /**
@@ -23,6 +25,23 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<BaseMsg> {
         //channel失效，从Map中移除
         NettyChannelMap.remove((SocketChannel)ctx.channel());
     }
+
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleState state = ((IdleStateEvent) evt).state();
+            if (state == IdleState.READER_IDLE) {
+                // 在规定时间内没有收到客户端的上行数据, 主动断开连接
+                System.out.println("未接到数据,断开了client连接");
+                ctx.disconnect();
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
+
+
     @Override
     protected void messageReceived(ChannelHandlerContext channelHandlerContext, BaseMsg baseMsg) throws Exception {
 
