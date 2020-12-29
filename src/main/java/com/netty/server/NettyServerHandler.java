@@ -8,6 +8,7 @@ import com.netty.message.PingMsg;
 import com.netty.message.ReplyClientBody;
 import com.netty.message.ReplyMsg;
 import com.netty.message.ReplyServerBody;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.SocketChannel;

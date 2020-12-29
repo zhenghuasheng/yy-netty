@@ -61,4 +61,11 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<BaseMsg> {
         }
         ReferenceCountUtil.release(msgType);
     }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        // 当Channel已经断开的情况下, 仍然发送数据, 会抛异常, 该方法会被调用.
+        cause.printStackTrace();
+        ctx.close();
+    }
 }
