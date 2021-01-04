@@ -2,6 +2,8 @@ package com.netty.client.thread;
 
 import com.netty.client.NettyClientBootstrap;
 
+import java.io.IOException;
+
 /**
  * @author zhs
  * @Description
@@ -22,6 +24,8 @@ public class RetryTask implements Runnable{
         try {
             tcpClient.connect();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

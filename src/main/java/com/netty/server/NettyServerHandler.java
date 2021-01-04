@@ -64,7 +64,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<BaseMsg> {
             case PING:{
                 PingMsg pingMsg=(PingMsg)baseMsg;
                 PingMsg replyPing=new PingMsg();
-                NettyChannelMap.get(pingMsg.getClientId()).writeAndFlush(replyPing);
+                Channel channel = NettyChannelMap.get(pingMsg.getClientId());
+                if (channel == null) {
+                    return;
+                }
+                channel.writeAndFlush(replyPing);
             }break;
             case ASK:{
                 //收到客户端的请求

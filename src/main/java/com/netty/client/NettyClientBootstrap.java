@@ -16,6 +16,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -81,22 +82,15 @@ public class NettyClientBootstrap {
     /**
      * 向远程TCP服务器请求连接
      */
-    public boolean connect() throws InterruptedException {
+    public void connect() throws InterruptedException, IOException {
         synchronized (bootstrap) {
-            try {
-                ChannelFuture future =bootstrap.connect(host,port).sync();
-                if (future.isSuccess()) {
-                    future.addListener(getConnectionListener());
-                    socketChannel = (SocketChannel)future.channel();
-                    System.out.println("connect server  成功---------");
-                    return true;
-                }
-            } catch (InterruptedException e) {
-               e.printStackTrace();
+            ChannelFuture future = bootstrap.connect(host, port);
+            future.addListener(getConnectionListener());
+            socketChannel = (SocketChannel)future.channel();
+            if (future.isSuccess()) {
+                System.out.println("connect server  成功---------");
             }
-
         }
-        return false;
     }
 
     public RetryPolicy getRetryPolicy() {
@@ -104,7 +98,7 @@ public class NettyClientBootstrap {
     }
 
 
-    public static void main(String[]args) throws InterruptedException {
+    public static void main(String[]args) throws InterruptedException, IOException {
         Constants.setClientId("001");
         NettyClientBootstrap nbc = new NettyClientBootstrap(9999,"localhost");
         nbc.connect();
@@ -114,13 +108,15 @@ public class NettyClientBootstrap {
         loginMsg.setPassword("yao");
         loginMsg.setUserName("robin");
         nbc.socketChannel.writeAndFlush(loginMsg);
-        while (true){
-            TimeUnit.SECONDS.sleep(3);
-            AskMsg askMsg=new AskMsg();
-            AskParams askParams=new AskParams();
-            askParams.setAuth("authToken");
-            askMsg.setParams(askParams);
-            nbc.socketChannel.writeAndFlush(askMsg);
-        }
+//        while (true){
+//            TimeUnit.SECONDS.sleep(3);
+//            AskMsg askMsg=new AskMsg();
+//            AskParams askParams=new AskParams();
+//            askParams.setAuth("authToken");
+//            askMsg.setParams(askParams);
+//            nbc.socketChannel.writeAndFlush(askMsg);
+//        }
+
+        System.in.read();;
     }
 }

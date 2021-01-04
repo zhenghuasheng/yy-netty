@@ -4,6 +4,7 @@ import com.netty.client.thread.RetryTask;
 import com.netty.message.BaseMsg;
 import io.netty.channel.*;
 
+import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ReconnectHandler extends SimpleChannelInboundHandler<BaseMsg> {
 
-    private int retries = 0;
+    private static int retries = 0;
     private RetryPolicy retryPolicy;
 
     private NettyClientBootstrap tcpClient;
@@ -58,14 +59,16 @@ public class ReconnectHandler extends SimpleChannelInboundHandler<BaseMsg> {
             eventLoop.schedule(new Runnable() {
                 @Override
                 public void run() {
-//                    System.out.println("Reconnecting ...");
-//                    try {
-//                        tcpClient.connect();
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+                    System.out.println("Reconnecting ...");
+                    try {
+                        tcpClient.connect();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
-                    executor.submit(new RetryTask(tcpClient));
+                    //executor.submit(new RetryTask(tcpClient));
                 }
             }, sleepTimeMs, TimeUnit.MILLISECONDS);
 

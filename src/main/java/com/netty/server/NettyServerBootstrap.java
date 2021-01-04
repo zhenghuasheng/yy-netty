@@ -47,7 +47,7 @@ public class NettyServerBootstrap {
                 @Override
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     ChannelPipeline p = socketChannel.pipeline();
-                    p.addLast(new IdleStateHandler(5,3,0));
+                    p.addLast(new IdleStateHandler(5,0,0));
                     p.addLast(new ObjectEncoder());
                     p.addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                     p.addLast(new NettyServerHandler());
