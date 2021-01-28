@@ -40,34 +40,40 @@ public class NettyClientBootstrap {
 
     private static final EventExecutorGroup group = new DefaultEventExecutorGroup(20);
 
-    public NettyClientBootstrap(int port, String host) throws InterruptedException {
+    public NettyClientBootstrap(int port, String host) throws InterruptedException, IOException {
         this.port = port;
         this.host = host;
         start();
     }
-    private void start() throws InterruptedException {
+    private void start() throws InterruptedException, IOException {
         EventLoopGroup eventLoopGroup=new NioEventLoopGroup();
-        bootstrap=new Bootstrap();
-        bootstrap.channel(NioSocketChannel.class);
-        bootstrap.option(ChannelOption.SO_KEEPALIVE,true);
-        bootstrap.group(eventLoopGroup);
-        bootstrap.remoteAddress(host,port);
-        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(new IdleStateHandler(20,2,0));
-                socketChannel.pipeline().addLast(new ObjectEncoder());
-                socketChannel.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
-                socketChannel.pipeline().addLast(new NettyClientHandler());
-                socketChannel.pipeline().addLast(new ReconnectHandler(NettyClientBootstrap.this));
-                socketChannel.pipeline().addLast(group);
-            }
-        });
+        try {
+            bootstrap=new Bootstrap();
+            bootstrap.channel(NioSocketChannel.class);
+            bootstrap.option(ChannelOption.SO_KEEPALIVE,true);
+            bootstrap.group(eventLoopGroup);
+            bootstrap.remoteAddress(host,port);
+            bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                protected void initChannel(SocketChannel socketChannel) throws Exception {
+                    socketChannel.pipeline().addLast(new IdleStateHandler(20,2,0));
+                    socketChannel.pipeline().addLast(new ObjectEncoder());
+                    socketChannel.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                    socketChannel.pipeline().addLast(new NettyClientHandler());
+                    socketChannel.pipeline().addLast(new ReconnectHandler(NettyClientBootstrap.this));
+                    socketChannel.pipeline().addLast(group);
+                }
+            });
 //        ChannelFuture future =bootstrap.connect(host,port).sync();
 //        if (future.isSuccess()) {
 //            socketChannel = (SocketChannel)future.channel();
 //            System.out.println("connect server  成功---------");
 //        }
+            connect();
+        } finally {
+            // 优雅关闭相关线程组资源
+            group.shutdownGracefully();
+        }
     }
     private ChannelFutureListener getConnectionListener() {
         return new ChannelFutureListener() {
@@ -84,12 +90,13 @@ public class NettyClientBootstrap {
      */
     public void connect() throws InterruptedException, IOException {
         synchronized (bootstrap) {
-            ChannelFuture future = bootstrap.connect(host, port);
+            ChannelFuture future = bootstrap.connect(host, port).sync();
             future.addListener(getConnectionListener());
             socketChannel = (SocketChannel)future.channel();
             if (future.isSuccess()) {
                 System.out.println("connect server  成功---------");
             }
+            future.channel().closeFuture().sync();
         }
     }
 
